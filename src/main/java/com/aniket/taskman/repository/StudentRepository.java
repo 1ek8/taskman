@@ -1,4 +1,4 @@
-package com.aniket.taskman.respository;
+package com.aniket.taskman.repository;
 
 
 import com.aniket.taskman.entity.Student;
