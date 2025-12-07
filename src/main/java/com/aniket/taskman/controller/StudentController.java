@@ -1,14 +1,15 @@
 package com.aniket.taskman.controller;
 
+import com.aniket.taskman.dto.AddStudentDTO;
 import com.aniket.taskman.dto.StudentDTO;
 //import com.aniket.taskman.entity.Student;
 //import com.aniket.taskman.repository.StudentRepository;
 import com.aniket.taskman.service.StudentService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,14 +24,25 @@ public class StudentController {
 //    }
 
     @GetMapping("/student")
-    public List<StudentDTO> getStudent() {
-        return studentService.getAllStudents();
+    public ResponseEntity<List<StudentDTO>> getStudent() {
+        return ResponseEntity.status(HttpStatus.OK).body(studentService.getAllStudents());
     }
 
     @GetMapping("/student/{id}")
-    public StudentDTO getStudentById(@PathVariable Long id) {
+    public ResponseEntity<StudentDTO> getStudentById(@PathVariable Long id) {
 //        return new StudentDTO(59L, "Aniket", "aniketsingh2151@gmail.com");
-        return studentService.getStudentbyId(id);
+        return ResponseEntity.status(HttpStatus.OK).body(studentService.getStudentbyId(id));
+    }
+
+    @PostMapping("/student")
+    public ResponseEntity<AddStudentDTO> createNewStudent(@RequestBody AddStudentDTO addStudentDTO){
+        return ResponseEntity.status(HttpStatus.CREATED).body(studentService.createNewStudent(addStudentDTO));
+    }
+
+    @DeleteMapping("/student/{id}")
+    public ResponseEntity<Void> deleteOneStudent(@PathVariable Long id){
+        studentService.deleteStudentbyId(id);
+        return ResponseEntity.noContent().build();
     }
 
 }

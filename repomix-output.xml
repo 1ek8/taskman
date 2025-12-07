@@ -54,6 +54,7 @@ src/
             controller/
               StudentController.java
             dto/
+              AddStudentDTO.java
               StudentDTO.java
             entity/
               Student.java
@@ -81,6 +82,32 @@ settings.gradle
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="src/main/java/com/aniket/taskman/dto/AddStudentDTO.java">
+package com.aniket.taskman.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class AddStudentDTO {
+    public String name;
+    public String email;
+}
+</file>
+
+<file path="gradle/wrapper/gradle-wrapper.properties">
+distributionBase=GRADLE_USER_HOME
+distributionPath=wrapper/dists
+distributionUrl=https\://services.gradle.org/distributions/gradle-9.2.1-bin.zip
+networkTimeout=10000
+validateDistributionUrl=true
+zipStoreBase=GRADLE_USER_HOME
+zipStorePath=wrapper/dists
+</file>
 
 <file path="src/main/java/com/aniket/taskman/config/MapperConfig.java">
 package com.aniket.taskman.config;
@@ -117,6 +144,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 <file path="src/main/java/com/aniket/taskman/service/impl/StudentServiceImpl.java">
 package com.aniket.taskman.service.impl;
 
+import com.aniket.taskman.dto.AddStudentDTO;
 import com.aniket.taskman.dto.StudentDTO;
 import com.aniket.taskman.entity.Student;
 import com.aniket.taskman.repository.StudentRepository;
@@ -150,12 +178,28 @@ public class StudentServiceImpl implements StudentService {
         StudentDTO studentDto = modelMapper.map(student, StudentDTO.class);
         return studentDto;
     }
+
+    @Override
+    public AddStudentDTO createNewStudent(AddStudentDTO addStudentDTO) {
+        Student newStudent = modelMapper.map(addStudentDTO, Student.class);
+        Student student = studentRepository.save(newStudent);
+        return modelMapper.map(student, AddStudentDTO.class);
+    }
+
+    @Override
+    public void deleteStudentbyId(Long id) {
+        if(!studentRepository.existsById(id)) {
+            throw new IllegalArgumentException("Student with " + id + " as ID doesn't seem to exist in DB");
+        }
+        studentRepository.deleteById(id);
+    }
 }
 </file>
 
 <file path="src/main/java/com/aniket/taskman/service/StudentService.java">
 package com.aniket.taskman.service;
 
+import com.aniket.taskman.dto.AddStudentDTO;
 import com.aniket.taskman.dto.StudentDTO;
 //import com.aniket.taskman.entity.Student;
 
@@ -164,100 +208,12 @@ import java.util.List;
 public interface StudentService {
 
     List<StudentDTO> getAllStudents();
+
     StudentDTO getStudentbyId(Long id);
-}
-</file>
 
-<file path="gradle/wrapper/gradle-wrapper.properties">
-distributionBase=GRADLE_USER_HOME
-distributionPath=wrapper/dists
-distributionUrl=https\://services.gradle.org/distributions/gradle-9.2.1-bin.zip
-networkTimeout=10000
-validateDistributionUrl=true
-zipStoreBase=GRADLE_USER_HOME
-zipStorePath=wrapper/dists
-</file>
+    AddStudentDTO createNewStudent(AddStudentDTO addStudentDTO);
 
-<file path="src/main/java/com/aniket/taskman/controller/StudentController.java">
-package com.aniket.taskman.controller;
-
-import com.aniket.taskman.dto.StudentDTO;
-//import com.aniket.taskman.entity.Student;
-//import com.aniket.taskman.repository.StudentRepository;
-import com.aniket.taskman.service.StudentService;
-import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
-
-@RestController
-@RequiredArgsConstructor
-public class StudentController {
-
-    private final StudentService studentService;
-
-//    public StudentController(StudentService studentService) {
-//        this.studentService = studentService;
-//    }
-
-    @GetMapping("/student")
-    public List<StudentDTO> getStudent() {
-        return studentService.getAllStudents();
-    }
-
-    @GetMapping("/student/{id}")
-    public StudentDTO getStudentById(@PathVariable Long id) {
-//        return new StudentDTO(59L, "Aniket", "aniketsingh2151@gmail.com");
-        return studentService.getStudentbyId(id);
-    }
-
-}
-</file>
-
-<file path="src/main/java/com/aniket/taskman/dto/StudentDTO.java">
-package com.aniket.taskman.dto;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data //creates boilerplate for getter-setter, constructor, others
-@AllArgsConstructor
-@NoArgsConstructor
-public class StudentDTO {
-    private Long id;
-    private String name;
-    private String email;
-
-}
-</file>
-
-<file path="src/main/java/com/aniket/taskman/entity/Student.java">
-package com.aniket.taskman.entity;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.Getter;
-import lombok.Setter;
-
-@Entity
-@Getter
-@Setter
-public class Student {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private String name;
-
-    private String email;
-
+    void deleteStudentbyId(Long id);
 }
 </file>
 
@@ -381,6 +337,109 @@ class TaskManApplicationTests {
 }
 </file>
 
+<file path="settings.gradle">
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+rootProject.name = 'taskman'
+</file>
+
+<file path="src/main/java/com/aniket/taskman/controller/StudentController.java">
+package com.aniket.taskman.controller;
+
+import com.aniket.taskman.dto.AddStudentDTO;
+import com.aniket.taskman.dto.StudentDTO;
+//import com.aniket.taskman.entity.Student;
+//import com.aniket.taskman.repository.StudentRepository;
+import com.aniket.taskman.service.StudentService;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequiredArgsConstructor
+public class StudentController {
+
+    private final StudentService studentService;
+
+//    public StudentController(StudentService studentService) {
+//        this.studentService = studentService;
+//    }
+
+    @GetMapping("/student")
+    public ResponseEntity<List<StudentDTO>> getStudent() {
+        return ResponseEntity.status(HttpStatus.OK).body(studentService.getAllStudents());
+    }
+
+    @GetMapping("/student/{id}")
+    public ResponseEntity<StudentDTO> getStudentById(@PathVariable Long id) {
+//        return new StudentDTO(59L, "Aniket", "aniketsingh2151@gmail.com");
+        return ResponseEntity.status(HttpStatus.OK).body(studentService.getStudentbyId(id));
+    }
+
+    @PostMapping("/student")
+    public ResponseEntity<AddStudentDTO> createNewStudent(@RequestBody AddStudentDTO addStudentDTO){
+        return ResponseEntity.status(HttpStatus.CREATED).body(studentService.createNewStudent(addStudentDTO));
+    }
+
+    @DeleteMapping("/student/{id}")
+    public ResponseEntity<Void> deleteOneStudent(@RequestBody Long id){
+        studentService.deleteStudentbyId(id);
+        return ResponseEntity.noContent().build();
+    }
+
+}
+</file>
+
+<file path="src/main/java/com/aniket/taskman/dto/StudentDTO.java">
+package com.aniket.taskman.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data //creates boilerplate for getter-setter, constructor, others
+@AllArgsConstructor
+@NoArgsConstructor
+public class StudentDTO {
+    private Long id;
+    private String name;
+    private String email;
+
+}
+</file>
+
+<file path="src/main/java/com/aniket/taskman/entity/Student.java">
+package com.aniket.taskman.entity;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.Getter;
+import lombok.Setter;
+
+@Entity
+@Getter
+@Setter
+public class Student {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    private String email;
+
+}
+</file>
+
 <file path="build.gradle">
 plugins {
 	id 'java'
@@ -424,14 +483,6 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
-</file>
-
-<file path="settings.gradle">
-plugins {
-    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
-}
-
-rootProject.name = 'taskman'
 </file>
 
 </files>
