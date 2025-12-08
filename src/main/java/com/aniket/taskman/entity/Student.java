@@ -6,10 +6,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Getter
 @Setter
+@ToString
 public class Student {
 
     @Id
@@ -18,6 +20,7 @@ public class Student {
 
     private String name;
 
+    @ToString.Exclude
     private String email;
 
 }

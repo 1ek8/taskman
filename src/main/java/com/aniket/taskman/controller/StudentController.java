@@ -5,6 +5,7 @@ import com.aniket.taskman.dto.StudentDTO;
 //import com.aniket.taskman.entity.Student;
 //import com.aniket.taskman.repository.StudentRepository;
 import com.aniket.taskman.service.StudentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -36,7 +37,7 @@ public class StudentController {
     }
 
     @PostMapping("/student")
-    public ResponseEntity<AddStudentDTO> createNewStudent(@RequestBody AddStudentDTO addStudentDTO) {
+    public ResponseEntity<AddStudentDTO> createNewStudent(@RequestBody @Valid AddStudentDTO addStudentDTO) {
         return ResponseEntity.status(HttpStatus.CREATED).body(studentService.createNewStudent(addStudentDTO));
     }
 
@@ -48,7 +49,7 @@ public class StudentController {
 
     @PutMapping("/student/{id}")
     public ResponseEntity<StudentDTO> updateStudent(@PathVariable Long id,
-                                                    @RequestBody AddStudentDTO addStudentDTO) {
+                                                    @RequestBody @Valid AddStudentDTO addStudentDTO) {
         return ResponseEntity.status(HttpStatus.OK).body(studentService.updateStudent(id, addStudentDTO));
     }
 
