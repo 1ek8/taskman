@@ -3,6 +3,8 @@ package com.aniket.taskman.controller;
 
 import com.aniket.taskman.dto.LoginRequestDTO;
 import com.aniket.taskman.dto.LoginResponseDTO;
+import com.aniket.taskman.dto.SignupRequestDTO;
+import com.aniket.taskman.dto.SignupResponseDTO;
 import com.aniket.taskman.security.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +22,16 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO loginRequestDTO) {
+
         return ResponseEntity.ok(authService.login(loginRequestDTO));
 
     }
+
+    @PostMapping("/signup")
+    public ResponseEntity<SignupResponseDTO> signup(@RequestBody SignupRequestDTO signupRequestDTO) {
+
+        return ResponseEntity.ok(authService.signup(signupRequestDTO));
+
+    }
+
 }
