@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Entity
+@Table(name = "app_user") //"user" is a reserved keyword in psql
 @Getter
 @Setter
 @AllArgsConstructor
@@ -21,7 +22,7 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JoinColumn(unique = true)
+    @Column(unique = true, nullable = false)
     private String username;
 
     private String password;
@@ -30,4 +31,5 @@ public class User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
     }
+
 }

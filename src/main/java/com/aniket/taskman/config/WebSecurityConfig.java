@@ -3,8 +3,11 @@ package com.aniket.taskman.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -21,14 +24,24 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity){
         httpSecurity
-                .formLogin(Customizer.withDefaults()) //this filter on its own overrides default auth in SP but doesnt provide auth processing, thus all endpoints will be public even without login
+                .csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable())
+                .sessionManagement(sessionConfig ->
+                        sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .formLogin(Customizer.withDefaults()) //this filter on its own overrides default auth in SP but doesnt provide auth processing, thus all endpoints will be public even without login
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/public/**").permitAll()
+                        .requestMatchers("/public/**", "/auth/**", "/error/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/teachers/**").hasAnyRole("TEACHER", "ADMIN")
                 );
 
         return httpSecurity.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) {
+
+        return configuration.getAuthenticationManager();
+
     }
 
 //    @Bean
