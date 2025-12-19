@@ -37,3 +37,5 @@ out/
 .vscode/
 repomix-output.xml
 .repomixignore
+src/main/resources/**
+

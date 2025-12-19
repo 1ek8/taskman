@@ -5,15 +5,18 @@ import com.aniket.taskman.dto.LoginResponseDTO;
 import com.aniket.taskman.dto.SignupRequestDTO;
 import com.aniket.taskman.dto.SignupResponseDTO;
 import com.aniket.taskman.entity.User;
+import com.aniket.taskman.entity.type.AuthProviderType;
 import com.aniket.taskman.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 //import org.jspecify.annotations.Nullable;
 import org.jspecify.annotations.Nullable;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -52,6 +55,32 @@ public class AuthService {
         );
 
         return modelMapper.map(user, SignupResponseDTO.class);
+
+    }
+
+    public ResponseEntity<LoginResponseDTO> handleOAuth2LoginRequest(OAuth2User oAuth2User, String registrationId) {
+
+        AuthProviderType providerType = authUtil.getProviderTypeFromRegistrationId(registrationId);
+        String providerId = authUtil.determineProviderIdFromOAuth2User(oAuth2User, registrationId);
+
+        User user = (User) userRepository.findByProviderIdAndProviderType(providerId, providerType).orElse(null);
+        String email = oAuth2User.getAttribute("email");
+
+        String emailUser = String.valueOf(userRepository.findByUsername(email).orElse(null));
+
+        if(user == null && emailUser == null) {
+            String username = authUtil.determineUsernameFromOAuth2User(oAuth2User, registrationId, providerId);
+            SignupResponseDTO signupResponseDTO = signup(new SignupRequestDTO(username, null));
+        } else if(user != null) {
+            if(email != null && !email.isBlank() && !email.equals(user.getUsername())) {
+                
+            }
+        }
+
+//
+//        fetch providerId and providerType, and save these pieces of info with user
+//        if user already got an account -> direct login
+//        else, first signup and thne login
 
     }
 }

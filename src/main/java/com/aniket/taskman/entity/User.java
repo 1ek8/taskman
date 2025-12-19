@@ -1,6 +1,7 @@
 package com.aniket.taskman.entity;
 
 
+import com.aniket.taskman.entity.type.AuthProviderType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,6 +27,9 @@ public class User implements UserDetails {
     private String username;
 
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    private AuthProviderType providerType;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
