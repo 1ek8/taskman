@@ -65,12 +65,12 @@ public class WebSecurityConfig {
         return httpSecurity.build();
     }
 
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) {
-
-        return configuration.getAuthenticationManager();
-
-    }
+//    @Bean
+//    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) {
+//
+//        return configuration.getAuthenticationManager();
+//
+//    }
 
 //    @Bean
 //    UserDetailsService userDetailsService() {
