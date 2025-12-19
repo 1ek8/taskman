@@ -13,11 +13,13 @@ import org.jspecify.annotations.Nullable;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -58,6 +60,7 @@ public class AuthService {
 
     }
 
+    @Transactional
     public ResponseEntity<LoginResponseDTO> handleOAuth2LoginRequest(OAuth2User oAuth2User, String registrationId) {
 
         AuthProviderType providerType = authUtil.getProviderTypeFromRegistrationId(registrationId);
@@ -70,17 +73,37 @@ public class AuthService {
 
         if(user == null && emailUser == null) {
             String username = authUtil.determineUsernameFromOAuth2User(oAuth2User, registrationId, providerId);
-            SignupResponseDTO signupResponseDTO = signup(new SignupRequestDTO(username, null));
+//            SignupResponseDTO signupResponseDTO = signup(new SignupRequestDTO(username, null));
+            user = signupInternal(new SignupRequestDTO(username, null));
         } else if(user != null) {
             if(email != null && !email.isBlank() && !email.equals(user.getUsername())) {
-                
+                user.setUsername(email);
+                userRepository.save(user);
             }
+        } else {
+            throw new BadCredentialsException("This email is already registered with provider likely: " + email);
         }
 
+        LoginResponseDTO loginResponseDTO = new LoginResponseDTO(authUtil.generateAccessToken(user), user.getId());
+        return ResponseEntity.ok(loginResponseDTO);
 //
 //        fetch providerId and providerType, and save these pieces of info with user
 //        if user already got an account -> direct login
 //        else, first signup and thne login
 
+    }
+
+    public User signupInternal(SignupRequestDTO signupRequestDTO) {
+        User user = userRepository.findByUsername(signupRequestDTO.getUsername()).orElse(null);
+
+        if(user != null) throw new IllegalArgumentException("User Already Exists");
+
+        user = userRepository.save(User.builder()
+                .username(signupRequestDTO.getUsername())
+                .password(passwordEncoder.encode(signupRequestDTO.getPassword()))
+                .build()
+        );
+
+        return user;
     }
 }

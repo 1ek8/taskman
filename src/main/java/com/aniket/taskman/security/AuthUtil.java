@@ -62,6 +62,8 @@ public class AuthUtil {
             case "github" -> oAuth2User.getAttribute("id").toString();
             default -> {
                 log.error("Unsupported OAuth2 provider for regId: " + registrationId);
+                throw new IllegalArgumentException("Unsupported OAuth2 provider for regId: " + registrationId);
+
             }
         };
 
@@ -84,7 +86,7 @@ public class AuthUtil {
             case "github" -> oAuth2User.getAttribute("login");
             default -> providerId;
 
-        }
+        };
     }
 
 }

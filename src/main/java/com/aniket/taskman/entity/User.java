@@ -25,8 +25,9 @@ public class User implements UserDetails {
 
     @Column(unique = true, nullable = false)
     private String username;
-
     private String password;
+
+    private String providerId;
 
     @Enumerated(EnumType.STRING)
     private AuthProviderType providerType;
