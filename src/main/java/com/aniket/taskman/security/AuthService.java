@@ -69,12 +69,14 @@ public class AuthService {
         User user = (User) userRepository.findByProviderIdAndProviderType(providerId, providerType).orElse(null);
         String email = oAuth2User.getAttribute("email");
 
-        String emailUser = String.valueOf(userRepository.findByUsername(email).orElse(null));
+//        String emailUser = String.valueOf(userRepository.findByUsername(email).orElse(null));
+        User emailUser = userRepository.findByUsername(email).orElse(null);
 
         if(user == null && emailUser == null) {
+//            new user signup
             String username = authUtil.determineUsernameFromOAuth2User(oAuth2User, registrationId, providerId);
 //            SignupResponseDTO signupResponseDTO = signup(new SignupRequestDTO(username, null));
-            user = signupInternal(new SignupRequestDTO(username, null));
+            user = signupInternal(new SignupRequestDTO(username, null), AuthProviderType.EMAIL, null);
         } else if(user != null) {
             if(email != null && !email.isBlank() && !email.equals(user.getUsername())) {
                 user.setUsername(email);
@@ -89,21 +91,25 @@ public class AuthService {
 //
 //        fetch providerId and providerType, and save these pieces of info with user
 //        if user already got an account -> direct login
-//        else, first signup and thne login
+//        else, first signup and then login
 
     }
 
-    public User signupInternal(SignupRequestDTO signupRequestDTO) {
+    public User signupInternal(SignupRequestDTO signupRequestDTO, AuthProviderType authProviderType, String providerId) {
         User user = userRepository.findByUsername(signupRequestDTO.getUsername()).orElse(null);
 
         if(user != null) throw new IllegalArgumentException("User Already Exists");
 
         user = userRepository.save(User.builder()
+//                .password(passwordEncoder.encode(signupRequestDTO.getPassword()))
                 .username(signupRequestDTO.getUsername())
-                .password(passwordEncoder.encode(signupRequestDTO.getPassword()))
                 .build()
         );
 
-        return user;
+        if(authProviderType == AuthProviderType.EMAIL) {
+            user.setPassword(passwordEncoder.encode(signupRequestDTO.getPassword()));
+        }
+
+        return userRepository.save(user);
     }
 }

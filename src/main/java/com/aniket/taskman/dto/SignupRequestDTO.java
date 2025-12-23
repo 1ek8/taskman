@@ -1,5 +1,6 @@
 package com.aniket.taskman.dto;
 
+import com.aniket.taskman.annotaitons.StudentUsernameValidation;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,7 +9,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class SignupRequestDTO {
 
-    @NotBlank(message = "Username is required")
+    @StudentUsernameValidation
     private String username;
 
     @NotBlank(message = "Password is required")
